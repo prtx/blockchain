@@ -26,4 +26,22 @@ class BlockchainTests(unittest.TestCase):
         self.assertTrue(transaction_block.timestamp > genesis_block.timestamp)
 
 
+    def test_chain(self):
+        chain = blockchain.Chain()
+        self.assertTrue(chain)
+
+
+    def test_chain_validation(self):
+        transactions1 = [1, 2, 3,]
+        transactions2 = [1, 2, 3, 4,]
+
+        chain = blockchain.Chain()
+        chain.register_block(transactions1)
+        chain.register_block(transactions2)
+        self.assertTrue(chain.isvalid())
+
+        chain.chain[1].transactions[1] = 11
+        self.assertFalse(chain.isvalid())
+
+
 unittest.main()
