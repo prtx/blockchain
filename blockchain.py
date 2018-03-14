@@ -5,7 +5,7 @@ import datetime
 
 class Block:
 
-    def __init__(self, previous_hash=None, transactions=()):
+    def __init__(self, previous_hash=None, transactions=[]):
         self.previous_hash = previous_hash
         self.transactions  = transactions
         self.timestamp     = datetime.datetime.now()
@@ -13,7 +13,7 @@ class Block:
     
 
     def generate_hash(self):
-        return hash((self.previous_hash, self.timestamp) + self.transactions)
+        return hash((self.previous_hash, self.timestamp) + tuple(self.transactions))
    
 
     def __repr__(self):
@@ -49,14 +49,12 @@ class Chain:
 
 if __name__ == "__main__":
     chain = Chain()
-    chain.register_block((1, 2, 3,))
-    chain.register_block((1, 2, 3, 4,))
+    chain.register_block([1, 2, 3,])
+    chain.register_block([1, 2, 3, 4,])
     
     print(chain)
     print(chain.isvalid())
     
-    l = list(chain.chain[1].transactions)
-    l[1] = 11
-    chain.chain[1].transactions = tuple(l)
+    chain.chain[1].transactions[1] = 11
     print(chain)
     print(chain.isvalid())
