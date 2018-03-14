@@ -29,6 +29,7 @@ class Chain:
 
     def register_block(self, transactions):
         self.chain.append(Block(self.chain[-1].this_hash, transactions))
+        return len(self.chain)-1
     
     
     def __repr__(self):
