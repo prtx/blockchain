@@ -7,9 +7,9 @@ class Block:
 
     def __init__(self, previous_hash=None, transactions=()):
         self.previous_hash = previous_hash
-        self.transactions = transactions
-        self.this_hash = self.generate_hash()
-        self.timestamp = datetime.datetime.now()
+        self.transactions  = transactions
+        self.timestamp     = datetime.datetime.now()
+        self.this_hash     = self.generate_hash()
     
 
     def generate_hash(self):
@@ -17,7 +17,7 @@ class Block:
    
 
     def __repr__(self):
-        return "transactions: %s, timestamp: %s" % (str(self.transactions), str(self.timestamp))
+        return "transactions: %s\ntimestamp: %s\n" % (str(self.transactions), str(self.timestamp))
 
 
 class Chain:
@@ -32,15 +32,15 @@ class Chain:
     
     
     def __repr__(self):
-        out = ""
+        output = ""
         for block in self.chain:
-            out += "%s\n" % str(block)
-        return out
+            output += "%s\n" % block
+        return output
     
 
     def isvalid(self):
         for i, block in enumerate(self.chain):
-            if not i: continue
+            if i==0: continue
             if block.previous_hash != self.chain[i-1].generate_hash():
                 return False
 
