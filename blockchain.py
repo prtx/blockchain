@@ -13,7 +13,7 @@ class Block:
     
 
     def generate_hash(self):
-        return hash((self.previous_hash,) + self.transactions)
+        return hash((self.previous_hash, self.timestamp) + self.transactions)
    
 
     def __repr__(self):
