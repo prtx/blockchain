@@ -32,11 +32,8 @@ class Chain:
         return len(self.chain)-1
     
     
-    def __repr__(self):
-        output = ""
-        for block in self.chain:
-            output += "%s\n" % block
-        return output
+    def get_data(self):
+        return [block.__dict__ for block in self.chain]
     
 
     def isvalid(self):
