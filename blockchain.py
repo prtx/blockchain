@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import datetime
+from urllib.parse import urlparse
 
 
 class Block:
@@ -25,6 +26,17 @@ class Chain:
     def __init__(self):
         genesis_block = Block()
         self.chain = [genesis_block]
+        self.nodes = set()
+
+
+    def register_node(self, address):
+        parsed_url = urlparse(address)
+        if parsed_url.netloc:
+            self.nodes.add(parsed_url.netloc)
+        elif parsed_url.path:
+            self.nodes.add(parsed_url.path)
+        else:
+            raise ValueError('Invalid URL')
 
 
     def register_block(self, transactions):
