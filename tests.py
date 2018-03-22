@@ -2,7 +2,7 @@ import unittest
 import datetime
 import requests
 
-from blockchain import Block, Chain
+from blockchain import Block, BlockChain
 
 
 class BlockTests(unittest.TestCase):
@@ -49,40 +49,40 @@ class BlockChainTests(unittest.TestCase):
     "an open, distributed ledger that can record transactions between two
     parties efficiently and in a verifiable and permanent way"."""
     def test_chain(self):
-        blockchain = Chain()
+        blockchain = BlockChain()
         self.assertTrue(blockchain)
 
         # First block in the chain is always a genesis block.
-        self.assertEqual(len(blockchain), 1)
-        self.assertEqual(type(blockchain[0]), Block)
-        self.assertEqual(blockchain[0].previous_hash, None)
-        self.assertEqual(blockchain[0].transactions, [])
+        self.assertEqual(len(blockchain.chain), 1)
+        self.assertEqual(type(blockchain.chain[0]), Block)
+        self.assertEqual(blockchain.chain[0].previous_hash, None)
+        self.assertEqual(blockchain.chain[0].transactions, [])
 
 
     def test_add_block(self):
-        blockchain = Chain()
+        blockchain = BlockChain()
 
         # A block is appended in the end of the list(chain).
         transactions1 = [1, 2, 3,]
         blockchain.register_block(transactions=transactions1)
-        self.assertEqual(len(blockchain), 2)
-        self.assertEqual(blockchain[-1].transactions, transactions1)
+        self.assertEqual(len(blockchain.chain), 2)
+        self.assertEqual(blockchain.chain[-1].transactions, transactions1)
 
         transactions2 = [1, 2, 3, 4,]
         blockchain.register_block(transactions=transactions2)
-        self.assertEqual(len(blockchain), 3)
-        self.assertEqual(blockchain[-1].transactions, transactions2)
+        self.assertEqual(len(blockchain.chain), 3)
+        self.assertEqual(blockchain.chain[-1].transactions, transactions2)
 
         # The hashes are maintained along the chain.
-        self.assertEqual(blockchain[0].this_hash, blockchain[1].previous_hash)
-        self.assertEqual(blockchain[1].this_hash, blockchain[2].previous_hash)
+        self.assertEqual(blockchain.chain[0].this_hash, blockchain.chain[1].previous_hash)
+        self.assertEqual(blockchain.chain[1].this_hash, blockchain.chain[2].previous_hash)
 
 
     def test_chain_validation(self):
         """A blockchain ledger should be immutable. To make sure we validate it
         by traversing through the chain to make sure previous hash of a block
         is indeed the hash of previous block."""
-        blockchain = Chain()
+        blockchain = BlockChain()
         transactions1 = [1, 2, 3,]
         blockchain.register_block(transactions=transactions1)
         transactions2 = [1, 2, 3, 4,]
@@ -90,7 +90,7 @@ class BlockChainTests(unittest.TestCase):
         self.assertTrue(blockchain.isvalid())
 
         # In case of any mutation the hash condition of the whole chain is invalid.
-        blockchain[1].transactions[1] = 11
+        blockchain.chain[1].transactions[1] = 11
         self.assertFalse(blockchain.isvalid())
 
 
@@ -99,7 +99,7 @@ class BlockChainTests(unittest.TestCase):
         attacks and other service abuses such as spam on a network by requiring
         some work from the service requester, usually meaning processing time
         by a computer. It is done to verify an honest node in a network."""
-        blockchain = Chain()
+        blockchain = BlockChain()
         proof_of_work = blockchain.proof_of_work()
         self.assertTrue(proof_of_work>0)
 
@@ -108,22 +108,22 @@ class BlockChainTests(unittest.TestCase):
         """Mining is the process of adding transaction records to the ledger.
         They are done by mining nodes. Transaction data are sent to them. They
         provide the proof of work and add blocks to the network."""
-        blockchain = Chain()
+        blockchain = BlockChain()
         self.assertEqual(blockchain.unmined_transactions, [])
 
         blockchain.add_transaction(1)
         self.assertEqual(blockchain.unmined_transactions, [1])
         blockchain.add_transaction(2)
         self.assertEqual(blockchain.unmined_transactions, [1, 2])
-        self.assertEqual(len(blockchain), 1)
+        self.assertEqual(len(blockchain.chain), 1)
         blockchain.mine()
         self.assertEqual(blockchain.unmined_transactions, [])
-        self.assertEqual(len(blockchain), 2)
-        self.assertEqual(blockchain[1].transactions, [1, 2])
+        self.assertEqual(len(blockchain.chain), 2)
+        self.assertEqual(blockchain.chain[1].transactions, [1, 2])
 
         blockchain.add_transaction(3)
         blockchain.mine()
-        self.assertEqual(len(blockchain), 3)
+        self.assertEqual(len(blockchain.chain), 3)
 
 
 class NodeTests(unittest.TestCase):
@@ -135,8 +135,8 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(data['chain_length'], 1)
 
     def test2_add_transaction(self):
-        r = requests.post('http://localhost:5000/add', data={'transaction': 1})
-        r = requests.post('http://localhost:5000/add', data={'transaction': 2})
+        r = requests.post('http://localhost:5000/add_transaction', data={'transaction': 1})
+        r = requests.post('http://localhost:5000/add_transaction', data={'transaction': 2})
         self.assertEqual(r.status_code, 201)
 
         r = requests.get('http://localhost:5000')

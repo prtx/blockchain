@@ -18,7 +18,7 @@ def view_chain():
     }), 200
 
 
-@app.route('/add', methods=['POST'])
+@app.route('/add_transaction', methods=['POST'])
 def add_transaction():
     transaction = flask.request.form.get('transaction')
     blockchain.add_transaction(transaction)
