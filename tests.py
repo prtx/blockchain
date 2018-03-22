@@ -93,4 +93,36 @@ class BlockChainTests(unittest.TestCase):
         self.assertFalse(blockchain.isvalid())
 
 
-unittest.main()
+    def test_proof_of_work(self):
+        """A proof-of-work is an economic measure to deter denial of service
+        attacks and other service abuses such as spam on a network by requiring
+        some work from the service requester, usually meaning processing time
+        by a computer. It is done to verify an honest node in a network."""
+        blockchain = Chain()
+        proof_of_work = blockchain.proof_of_work()
+        self.assertTrue(proof_of_work>0)
+
+
+    def test_mining(self):
+        """Mining is the process of adding transaction records to the ledger.
+        They are done by mining nodes. Transaction data are sent to them. They
+        provide the proof of work and add blocks to the network."""
+        blockchain = Chain()
+        self.assertEqual(blockchain.unmined_transactions, [])
+
+        blockchain.add_transaction(1)
+        self.assertEqual(blockchain.unmined_transactions, [1])
+        blockchain.add_transaction(2)
+        self.assertEqual(blockchain.unmined_transactions, [1, 2])
+        self.assertEqual(len(blockchain), 1)
+        blockchain.mine()
+        self.assertEqual(blockchain.unmined_transactions, [])
+        self.assertEqual(len(blockchain), 2)
+        self.assertEqual(blockchain[1].transactions, [1, 2])
+
+        blockchain.add_transaction(3)
+        blockchain.mine()
+        self.assertEqual(len(blockchain), 3)
+
+
+unittest.main(verbosity=2)
