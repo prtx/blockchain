@@ -1,5 +1,6 @@
 import unittest
 import datetime
+import requests
 
 from blockchain import Block, Chain
 
@@ -123,6 +124,36 @@ class BlockChainTests(unittest.TestCase):
         blockchain.add_transaction(3)
         blockchain.mine()
         self.assertEqual(len(blockchain), 3)
+
+
+class NodeTests(unittest.TestCase):
+    def test1_node_chain(self):
+        r = requests.get('http://localhost:5000')
+        data = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(data['chain'])
+        self.assertEqual(data['chain_length'], 1)
+
+    def test2_add_transaction(self):
+        r = requests.post('http://localhost:5000/add', data={'transaction': 1})
+        r = requests.post('http://localhost:5000/add', data={'transaction': 2})
+        self.assertEqual(r.status_code, 201)
+
+        r = requests.get('http://localhost:5000')
+        data = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(data['unmined'])
+        self.assertEqual(data['unmined_length'], 2)
+
+    def test3_mine(self):
+        r = requests.get('http://localhost:5000/mine')
+        self.assertEqual(r.status_code, 200)
+
+        r = requests.get('http://localhost:5000')
+        data = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(data['chain_length'], 2)
+        self.assertEqual(data['unmined_length'], 0)
 
 
 unittest.main(verbosity=2)
