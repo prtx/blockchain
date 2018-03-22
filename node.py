@@ -31,5 +31,18 @@ def mine():
     return "Success", 200
 
 
+@app.route('/register_node', methods=['POST'])
+def register_nodes():
+    node = flask.request.form.get('node')
+    blockchain.register_node(node)
+    return "Success", 201
+
+
+@app.route('/consensus')
+def consensus():
+    blockchain.consensus()
+    return "Success", 200
+
+
 if __name__ == '__main__':
     app.run(debug=True)

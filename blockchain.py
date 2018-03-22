@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import datetime
+import requests
 import pickle
 import binascii
 from urllib.parse import urlparse
@@ -88,6 +89,30 @@ class BlockChain:
         last_proof = self.chain[-1].proof
         last_hash  = self.chain[-1].this_hash
         return not str(hash((last_proof, proof, last_hash)))[-4:]=="0000"
+
+
+    def consensus(self):
+        max_length = len(self.chain)
+        new_chain  = None
+
+        for node in self.nodes:
+            response = requests.get('http://%s' % node)
+            if response.status_code != 200: continue
+
+            str_pickle  = response.json()['pickle']
+            byte_pickle = binascii.unhexlify(str_pickle.encode('utf-8'))
+            node_chain  = pickle.loads(byte_pickle)
+            length      = len(node_chain.chain)
+            print(length)
+            print(max_length)
+            print(length > max_length)
+            print(node_chain.isvalid())
+            if length > max_length:
+                new_chain  = node_chain
+                max_length = length
+
+        if new_chain:
+            self.chain = new_chain.chain
 
 
     def pickle(self):
