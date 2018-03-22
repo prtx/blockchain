@@ -128,13 +128,17 @@ class BlockChainTests(unittest.TestCase):
 
 class NodeTests(unittest.TestCase):
     def test1_node_chain(self):
+        """Multiple decentralized nodes are live that hold and pass on the
+        transactions."""
         r = requests.get('http://localhost:5000')
         data = r.json()
         self.assertEqual(r.status_code, 200)
         self.assertTrue(data['chain'])
         self.assertEqual(data['chain_length'], 1)
 
+
     def test2_add_transaction(self):
+        """Users add transactions to different nodes."""
         r = requests.post('http://localhost:5000/add_transaction', data={'transaction': 1})
         r = requests.post('http://localhost:5000/add_transaction', data={'transaction': 2})
         self.assertEqual(r.status_code, 201)
@@ -145,7 +149,9 @@ class NodeTests(unittest.TestCase):
         self.assertTrue(data['unmined'])
         self.assertEqual(data['unmined_length'], 2)
 
+
     def test3_mine(self):
+        """Nodes mine the transactions into blocks."""
         r = requests.get('http://localhost:5000/mine')
         self.assertEqual(r.status_code, 200)
 
@@ -155,7 +161,10 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(data['chain_length'], 2)
         self.assertEqual(data['unmined_length'], 0)
 
+
     def test4_consensus(self):
+        """The blocks are added into a network when there is a consensus
+        between different nodes."""
         r = requests.post('http://localhost:5000/register_node', data={'node': 'localhost:4000'})
         self.assertEqual(r.status_code, 201)
         r = requests.post('http://localhost:4000/register_node', data={'node': 'localhost:5000'})
@@ -164,6 +173,37 @@ class NodeTests(unittest.TestCase):
         r = requests.get('http://localhost:5000/consensus')
         self.assertEqual(r.status_code, 200)
         r = requests.get('http://localhost:4000/consensus')
+        self.assertEqual(r.status_code, 200)
+
+
+    def test5_evern_more_consensus(self):
+        """The blocks are added into a network when there is a consensus
+        between different nodes."""
+
+        # Adding a new node.
+        r = requests.post('http://localhost:5000/register_node', data={'node': 'localhost:3000'})
+        r = requests.post('http://localhost:4000/register_node', data={'node': 'localhost:5000'})
+        r = requests.post('http://localhost:4000/register_node', data={'node': 'localhost:3000'})
+        r = requests.post('http://localhost:3000/register_node', data={'node': 'localhost:4000'})
+
+        # Maintaining consensus.
+        r = requests.get('http://localhost:5000/consensus')
+        self.assertEqual(r.status_code, 200)
+        r = requests.get('http://localhost:4000/consensus')
+        self.assertEqual(r.status_code, 200)
+        r = requests.get('http://localhost:3000/consensus')
+        self.assertEqual(r.status_code, 200)
+
+        # New transaction mined by node 3000.
+        r = requests.post('http://localhost:3000/add_transaction', data={'transaction': 5})
+        r = requests.get('http://localhost:3000/mine')
+
+        # And another consensus.
+        r = requests.get('http://localhost:5000/consensus')
+        self.assertEqual(r.status_code, 200)
+        r = requests.get('http://localhost:4000/consensus')
+        self.assertEqual(r.status_code, 200)
+        r = requests.get('http://localhost:3000/consensus')
         self.assertEqual(r.status_code, 200)
 
 
