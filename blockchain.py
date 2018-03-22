@@ -15,7 +15,7 @@ class Block:
     
 
     def generate_hash(self):
-        return hash((self.previous_hash, self.timestamp, self.proof) + tuple(self.transactions))
+        return hash("%s-%s-%s-%s" % (self.previous_hash, self.timestamp, self.proof, self.transactions))
    
 
     def __repr__(self):
