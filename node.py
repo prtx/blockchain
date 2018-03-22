@@ -45,4 +45,11 @@ def consensus():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser()
+    parser.add_argument('-p', '--port', type=int)
+    args = parser.parse_args()
+    port = args.port
+
+    app.run(debug=True, port=port)
