@@ -86,17 +86,3 @@ class Chain(list):
         last_proof = self[-1].proof
         last_hash  = self[-1].this_hash
         return not str(hash((last_proof, proof, last_hash)))[-4:]=="0000"
-
-
-
-if __name__ == "__main__":
-    chain = Chain()
-    chain.register_block([1, 2, 3,])
-    chain.register_block([1, 2, 3, 4,])
-    
-    print(chain)
-    print(chain.isvalid())
-    
-    chain.chain[1].transactions[1] = 11
-    print(chain)
-    print(chain.isvalid())
