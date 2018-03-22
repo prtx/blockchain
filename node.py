@@ -1,5 +1,4 @@
 import flask
-import json
 from blockchain import Chain as BlockChain
 
 app = flask.Flask(__name__)
@@ -10,18 +9,24 @@ blockchain = BlockChain()
 def view_chain():
     chain = blockchain.get_data()
     return flask.jsonify({
-        'chain'  : chain,
-        'length' : len(chain),
+        'chain'          : chain,
+        'chain_length'   : len(chain),
+        'unmined'        : blockchain.unmined_transactions,
+        'unmined_length' : len(blockchain.unmined_transactions),
     }), 200
 
 
 @app.route('/add', methods=['POST'])
-def new_transaction_block():
-    data     = flask.request.data
-    index    = blockchain.register_block(json.loads(data)['transactions'])
-    response = {'message': f'Transaction will be added to Block {index}'}
+def add_transaction():
+    transaction = flask.request.form.get('transaction')
+    blockchain.add_transaction(transaction)
+    return "Success", 201
 
-    return flask.jsonify(response), 201
+
+@app.route('/mine', methods=['GET'])
+def mine():
+    chain = blockchain.mine()
+    return "Success", 200
 
 
 if __name__ == '__main__':
