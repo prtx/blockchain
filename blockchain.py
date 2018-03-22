@@ -6,15 +6,16 @@ from urllib.parse import urlparse
 
 class Block:
 
-    def __init__(self, previous_hash=None, transactions=[]):
+    def __init__(self, previous_hash=None, proof=0, transactions=[]):
         self.previous_hash = previous_hash
         self.transactions  = transactions
         self.timestamp     = datetime.datetime.now()
+        self.proof         = proof
         self.this_hash     = self.generate_hash()
     
 
     def generate_hash(self):
-        return hash((self.previous_hash, self.timestamp) + tuple(self.transactions))
+        return hash((self.previous_hash, self.timestamp, self.proof) + tuple(self.transactions))
    
 
     def __repr__(self):
@@ -25,6 +26,7 @@ class Chain:
     
     def __init__(self):
         genesis_block = Block()
+        self.unmined_transactions = []
         self.chain = [genesis_block]
         self.nodes = set()
 
@@ -39,8 +41,12 @@ class Chain:
             raise ValueError('Invalid URL')
 
 
-    def register_block(self, transactions):
-        self.chain.append(Block(self.chain[-1].this_hash, transactions))
+    def register_block(self, proof=0, transactions=[]):
+        self.chain.append(Block(
+            self.chain[-1].this_hash,
+            proof        = proof,
+            transactions = transactions
+        ))
         return len(self.chain)-1
     
     
@@ -55,6 +61,32 @@ class Chain:
                 return False
 
         return True
+
+
+    def add_transaction(self, transaction):
+        self.unmined_transactions.append(transaction)
+
+
+    def mine(self):
+        self.register_block(
+            proof        = self.proof_of_work(),
+            transactions = self.unmined_transactions
+        )
+        self.unmined_transactions = []
+
+
+    def proof_of_work(self):
+        proof = 0
+        while self.working(proof):
+            proof += 1
+        return proof
+
+
+    def working(self, proof):
+        last_proof = self.chain[-1].proof
+        last_hash  = self.chain[-1].this_hash
+        return not str(hash((last_proof, proof, last_hash)))[-4:]=="0000"
+
 
 
 if __name__ == "__main__":
