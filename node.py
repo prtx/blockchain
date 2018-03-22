@@ -1,5 +1,5 @@
 import flask
-from blockchain import Chain as BlockChain
+from blockchain import BlockChain
 
 app = flask.Flask(__name__)
 blockchain = BlockChain()

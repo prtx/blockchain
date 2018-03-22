@@ -22,12 +22,12 @@ class Block:
         return "transactions: %s\ntimestamp: %s\n" % (str(self.transactions), str(self.timestamp))
 
 
-class Chain(list):
+class BlockChain:
     
     def __init__(self):
         genesis_block = Block()
         self.unmined_transactions = []
-        self.append(genesis_block)
+        self.chain = [genesis_block]
         self.nodes = set()
 
 
@@ -42,22 +42,22 @@ class Chain(list):
 
 
     def register_block(self, proof=0, transactions=[]):
-        self.append(Block(
-            self[-1].this_hash,
+        self.chain.append(Block(
+            self.chain[-1].this_hash,
             proof        = proof,
             transactions = transactions
         ))
-        return len(self)-1
+        return len(self.chain)-1
     
     
     def get_data(self):
-        return [block.__dict__ for block in self]
+        return [block.__dict__ for block in self.chain]
     
 
     def isvalid(self):
-        for i, block in enumerate(self):
+        for i, block in enumerate(self.chain):
             if i==0: continue
-            if block.previous_hash != self[i-1].generate_hash():
+            if block.previous_hash != self.chain[i-1].generate_hash():
                 return False
 
         return True
@@ -83,6 +83,6 @@ class Chain(list):
 
 
     def working(self, proof):
-        last_proof = self[-1].proof
-        last_hash  = self[-1].this_hash
+        last_proof = self.chain[-1].proof
+        last_hash  = self.chain[-1].this_hash
         return not str(hash((last_proof, proof, last_hash)))[-4:]=="0000"
