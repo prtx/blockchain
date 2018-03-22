@@ -155,5 +155,16 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(data['chain_length'], 2)
         self.assertEqual(data['unmined_length'], 0)
 
+    def test4_consensus(self):
+        r = requests.post('http://localhost:5000/register_node', data={'node': 'localhost:4000'})
+        self.assertEqual(r.status_code, 201)
+        r = requests.post('http://localhost:4000/register_node', data={'node': 'localhost:5000'})
+        self.assertEqual(r.status_code, 201)
+
+        r = requests.get('http://localhost:5000/consensus')
+        self.assertEqual(r.status_code, 200)
+        r = requests.get('http://localhost:4000/consensus')
+        self.assertEqual(r.status_code, 200)
+
 
 unittest.main(verbosity=2)
