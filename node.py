@@ -9,10 +9,12 @@ blockchain = BlockChain()
 def view_chain():
     chain = blockchain.get_data()
     return flask.jsonify({
+        'pickle'         : blockchain.pickle(),
         'chain'          : chain,
         'chain_length'   : len(chain),
         'unmined'        : blockchain.unmined_transactions,
         'unmined_length' : len(blockchain.unmined_transactions),
+        'valid'          : blockchain.isvalid(),
     }), 200
 
 

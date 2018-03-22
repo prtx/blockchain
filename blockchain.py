@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import datetime
+import pickle
+import binascii
 from urllib.parse import urlparse
 
 
@@ -86,3 +88,10 @@ class BlockChain:
         last_proof = self.chain[-1].proof
         last_hash  = self.chain[-1].this_hash
         return not str(hash((last_proof, proof, last_hash)))[-4:]=="0000"
+
+
+    def pickle(self):
+        bytestream = pickle.dumps(self)
+        hex_data = binascii.hexlify(bytestream)
+        return hex_data.decode('utf-8')
+
