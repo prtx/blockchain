@@ -25,45 +25,51 @@ class Block:
         return "transactions: %s\ntimestamp: %s\n" % (str(self.transactions), str(self.timestamp))
 
 
-class BlockChain:
+class Chain(list):
     
     def __init__(self):
         genesis_block = Block()
-        self.unmined_transactions = []
-        self.chain = [genesis_block]
-        self.nodes = set()
-
-
-    def register_node(self, address):
-        parsed_url = urlparse(address)
-        if parsed_url.netloc:
-            self.nodes.add(parsed_url.netloc)
-        elif parsed_url.path:
-            self.nodes.add(parsed_url.path)
-        else:
-            raise ValueError('Invalid URL')
+        self.append(genesis_block)
 
 
     def register_block(self, proof=0, transactions=[]):
-        self.chain.append(Block(
-            self.chain[-1].this_hash,
+        self.append(Block(
+            self[-1].this_hash,
             proof        = proof,
             transactions = transactions
         ))
-        return len(self.chain)-1
+        return len(self)-1
     
     
     def get_data(self):
-        return [block.__dict__ for block in self.chain]
+        return [block.__dict__ for block in self]
     
 
     def isvalid(self):
-        for i, block in enumerate(self.chain):
+        for i, block in enumerate(self):
             if i==0: continue
-            if block.previous_hash != self.chain[i-1].generate_hash():
+            if block.previous_hash != self[i-1].generate_hash():
                 return False
 
         return True
+
+
+class Node:
+
+    def __init__(self):
+        self.unmined_transactions = []
+        self.peers = set()
+        self.chain = Chain()
+
+
+    def register_peer(self, address):
+        parsed_url = urlparse(address)
+        if parsed_url.netloc:
+            self.peers.add(parsed_url.netloc)
+        elif parsed_url.path:
+            self.peers.add(parsed_url.path)
+        else:
+            raise ValueError('Invalid URL')
 
 
     def add_transaction(self, transaction):
@@ -71,7 +77,7 @@ class BlockChain:
 
 
     def mine(self):
-        self.register_block(
+        self.chain.register_block(
             proof        = self.proof_of_work(),
             transactions = self.unmined_transactions
         )
@@ -95,28 +101,23 @@ class BlockChain:
         max_length = len(self.chain)
         new_chain  = None
 
-        for node in self.nodes:
-            response = requests.get('http://%s' % node)
+        for peer_addr in self.peers:
+            response = requests.get('http://%s' % peer_addr)
             if response.status_code != 200: continue
 
             str_pickle  = response.json()['pickle']
             byte_pickle = binascii.unhexlify(str_pickle.encode('utf-8'))
-            node_chain  = pickle.loads(byte_pickle)
-            length      = len(node_chain.chain)
-            print(length)
-            print(max_length)
-            print(length > max_length)
-            print(node_chain.isvalid())
+            chain       = pickle.loads(byte_pickle)
+            length      = len(chain)
             if length > max_length:
-                new_chain  = node_chain
+                new_chain  = chain
                 max_length = length
 
         if new_chain:
-            self.chain = new_chain.chain
+            self.chain = chain
 
 
     def pickle(self):
-        bytestream = pickle.dumps(self)
+        bytestream = pickle.dumps(self.chain)
         hex_data = binascii.hexlify(bytestream)
         return hex_data.decode('utf-8')
-

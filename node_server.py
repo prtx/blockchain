@@ -1,46 +1,46 @@
 import flask
-from blockchain import BlockChain
+from blockchain import Node
 
 app = flask.Flask(__name__)
-blockchain = BlockChain()
+node = Node()
 
 
 @app.route('/', methods=['GET'])
 def view_chain():
-    chain = blockchain.get_data()
+    chain = node.chain.get_data()
     return flask.jsonify({
-        'pickle'         : blockchain.pickle(),
+        'pickle'         : node.pickle(),
         'chain'          : chain,
         'chain_length'   : len(chain),
-        'unmined'        : blockchain.unmined_transactions,
-        'unmined_length' : len(blockchain.unmined_transactions),
-        'valid'          : blockchain.isvalid(),
+        'unmined'        : node.unmined_transactions,
+        'unmined_length' : len(node.unmined_transactions),
+        'valid'          : node.chain.isvalid(),
     }), 200
 
 
 @app.route('/add_transaction', methods=['POST'])
 def add_transaction():
     transaction = flask.request.form.get('transaction')
-    blockchain.add_transaction(transaction)
+    node.add_transaction(transaction)
     return "Success", 201
 
 
 @app.route('/mine', methods=['GET'])
 def mine():
-    chain = blockchain.mine()
+    chain = node.mine()
     return "Success", 200
 
 
-@app.route('/register_node', methods=['POST'])
-def register_nodes():
-    node = flask.request.form.get('node')
-    blockchain.register_node(node)
+@app.route('/register_peer', methods=['POST'])
+def register_peer():
+    peer_addr = flask.request.form.get('peer')
+    node.register_peer(peer_addr)
     return "Success", 201
 
 
 @app.route('/consensus')
 def consensus():
-    blockchain.consensus()
+    node.consensus()
     return "Success", 200
 
 
